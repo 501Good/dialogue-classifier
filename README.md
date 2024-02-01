@@ -6,7 +6,7 @@ This is a hierarchical classifier that can be trained to process the data in the
 
 1. The data must be in `.jsonl` format, where each line is one dialogue. Each line has the folowing structure:
 
-    ```
+    ```json
     {
         "id": "000",
         "turns": ["Dialogue turn #0", "Dialogue turn #1", "Dialogue turn #2"], 
@@ -18,7 +18,7 @@ This is a hierarchical classifier that can be trained to process the data in the
 
 2. Example command to run the training:
 
-    ```
+    ```sh
     python run_train.py --dataset_name MY_DATASET --model_name_or_path intfloat/e5-base-v2 \
     --output_dir saved_models/MY_DATASET-e5v2-fixed_steps-smoothl1-optimized --do_train --per_device_train_batch_size 4 --per_device_eval_batch_size 4 \
     --gradient_accumulation_steps 8 --evaluation_strategy steps --eval_steps 200 --max_steps 2000 --warmup_ratio 0.1 \
@@ -30,7 +30,7 @@ This is a hierarchical classifier that can be trained to process the data in the
 
 3. Example command to run the prediction on the test set:
 
-    ```
+    ```sh
     python predict_optimized.py --model_name saved_models/MY_DATASET-e5v2-fixed_steps-smoothl1-optimized/checkpoint-1000 --dataset_name MY_DATASET --output predictions/fixed/MY_DATASET-e5v2-fixed_steps-smoothl1-optimized-1000-test.json --device cuda --data_split test
     ```
 
