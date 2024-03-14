@@ -160,7 +160,8 @@ def main():
 
     if return_attn:
         torch.save(attentions, args.save_attentions)
-    json.dump(preds, open(args.output, "w", encoding="utf-8"))
+    with open(args.output, "w", encoding="utf-8") as dump_file:
+        json.dump(preds, dump_file)
 
     preds = np.array(preds, dtype=float).squeeze()
     labels = np.array(labels, dtype=float).squeeze()

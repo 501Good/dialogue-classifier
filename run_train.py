@@ -30,28 +30,22 @@ import numpy as np
 import torch
 import transformers
 from datasets import load_dataset
-from peft import LoraConfig, TaskType, get_peft_model
+from peft import LoraConfig, get_peft_model
 from transformers import (
-    AutoConfig,
-    AutoModelForSequenceClassification,
     AutoTokenizer,
-    DataCollatorWithPadding,
     EvalPrediction,
     HfArgumentParser,
-    PretrainedConfig,
     Trainer,
     TrainingArguments,
-    default_data_collator,
     set_seed,
 )
 from transformers.trainer_utils import get_last_checkpoint
-from transformers.utils import check_min_version, send_example_telemetry
+from transformers.utils import check_min_version
 from transformers.utils.versions import require_version
 
 from dialogue_classifier.configuration_lexformer import LexFormerConfig
 from dialogue_classifier.modeling_lexformer import (
     LexFormerForSequenceClassification,
-    LexFormerModel,
     ZILexFormerForSequenceClassification,
 )
 from dialogue_classifier.utils import UtteranceCollator
@@ -624,30 +618,6 @@ def main():
 
         trainer.log_metrics("eval", metrics)
         trainer.save_metrics("eval", metrics)
-
-    if training_args.do_predict:
-        logger.info("*** Predict ***")
-
-        # Removing the `label` columns because it contains -1 and Trainer won't like that.
-        predict_dataset = predict_dataset.remove_columns("label")
-        predictions = trainer.predict(
-            predict_dataset, metric_key_prefix="predict"
-        ).predictions
-
-        output_predict_file = os.path.join(
-            training_args.output_dir, f"predict_results_{task}.txt"
-        )
-        if trainer.is_world_process_zero():
-            with open(output_predict_file, "w") as writer:
-                logger.info(f"***** Predict results {task} *****")
-                writer.write("index\tprediction\n")
-                for index, item in enumerate(predictions):
-                    print(index, item)
-                    if is_regression:
-                        writer.write(f"{index}\t{item:3.3f}\n")
-                    else:
-                        item = label_list[item]
-                        writer.write(f"{index}\t{item}\n")
 
     kwargs = {
         "finetuned_from": model_args.model_name_or_path,
