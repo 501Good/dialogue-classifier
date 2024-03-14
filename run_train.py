@@ -54,6 +54,7 @@ from dialogue_classifier.modeling_lexformer import (
     LexFormerModel,
     ZILexFormerForSequenceClassification,
 )
+from dialogue_classifier.utils import UtteranceCollator
 
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
 check_min_version("4.26.0")
@@ -366,72 +367,6 @@ def main():
     }
     raw_dataset = load_dataset("json", data_files=data_files)
 
-    def collate_fn(batch):
-        input_ids = []
-        attention_mask = []
-        input_lens = []
-        for x in batch:
-            final_inputs = []
-            final_input = []
-            final_attention_masks = []
-            final_input_len = []
-            final_input_lens = []
-            input_len = 0
-            max_len = tokenizer.model_max_length
-
-            for line in x["input_ids"]:
-                if input_len == 0:
-                    final_input.append(tokenizer.cls_token_id)
-                    input_len += 1
-                    final_input_len.append(1)
-                if input_len + len(line) + 1 <= max_len - 1:
-                    final_input.extend(line[: max_len - 2] + [tokenizer.sep_token_id])
-                    final_input_len.append(len(line[: max_len - 2]) + 1)
-                    input_len += len(line[: max_len - 2]) + 1
-                else:
-                    final_inputs.append(
-                        final_input
-                        + [tokenizer.pad_token_id] * (max_len - len(final_input))
-                    )
-                    final_input_lens.append(
-                        final_input_len + [max_len - len(final_input)]
-                    )
-                    final_attention_masks.append(
-                        [1] * input_len + [0] * (max_len - input_len)
-                    )
-                    final_input = (
-                        [tokenizer.cls_token_id]
-                        + line[: max_len - 2]
-                        + [tokenizer.sep_token_id]
-                    )
-                    final_input_len = [1, len(line[: max_len - 2]) + 1]
-                    input_len = len(line[: max_len - 2]) + 2
-            final_inputs.append(
-                final_input + [tokenizer.pad_token_id] * (max_len - len(final_input))
-            )
-            final_attention_masks.append([1] * input_len + [0] * (max_len - input_len))
-            final_input_lens.append(final_input_len + [max_len - len(final_input)])
-            input_ids.extend(final_inputs)
-            attention_mask.extend(final_attention_masks)
-            input_lens.extend(final_input_lens)
-
-        labels = torch.tensor([x["labels"] for x in batch])
-        try:
-            input_ids = torch.tensor(input_ids)
-        except ValueError as e:
-            print([len(x) for x in input_ids])
-            print(input_ids)
-            raise e
-        attention_mask = torch.tensor(attention_mask)
-        text_lens = torch.tensor([len(x["input_ids"]) for x in batch])
-        return {
-            "labels": labels,
-            "input_ids": input_ids,
-            "attention_mask": attention_mask,
-            "input_lens": input_lens,
-            "text_lens": text_lens,
-        }
-
     # Load pretrained model and tokenizer
     #
     # In distributed training, the .from_pretrained methods guarantee that only one local process can concurrently
@@ -463,9 +398,11 @@ def main():
         use_auth_token=True if model_args.use_auth_token else None,
     )
     tokenizer = AutoTokenizer.from_pretrained(
-        model_args.tokenizer_name
-        if model_args.tokenizer_name
-        else model_args.model_name_or_path,
+        (
+            model_args.tokenizer_name
+            if model_args.tokenizer_name
+            else model_args.model_name_or_path
+        ),
         cache_dir=model_args.cache_dir,
         use_fast=model_args.use_fast_tokenizer,
         revision=model_args.model_revision,
@@ -572,7 +509,9 @@ def main():
 
     # Data collator will default to DataCollatorWithPadding when the tokenizer is passed to Trainer, so we change it if
     # we already did the padding.
-    data_collator = collate_fn
+    data_collator = UtteranceCollator(
+        tokenizer, device=torch.device(training_args.device)
+    )
 
     # Initialize our Trainer
     trainer = Trainer(
