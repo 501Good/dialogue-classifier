@@ -1,0 +1,25 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Dialogue Classifier
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Kirill
+    family-names: Milintsevich
+    email: milintsevich@gmail.com
+    affiliation: Université de Caen Normandie
+    orcid: 'https://orcid.org/0000-0001-9253-1682'
+identifiers:
+  - type: url
+    value: 'https://aclanthology.org/2024.clinicalnlp-1.28/'
+repository-code: 'https://github.com/501Good/dialogue-classifier'
+abstract: >-
+  This is a hierarchical classifier that can be trained to
+  process the data in the dialogue format.
+license: MIT
+commit: 5e72ee9fd97027c08980c038864bffe5ee17ce32
+version: '1.0'
