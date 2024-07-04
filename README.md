@@ -1,5 +1,7 @@
 # Dialogue Classifier
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.12657477.svg)](https://doi.org/10.5281/zenodo.12657477)
+
 This is a hierarchical classifier that can be trained to process the data in the dialogue format.
 
 ## How to run
