@@ -16,6 +16,8 @@ authors:
 identifiers:
   - type: url
     value: 'https://aclanthology.org/2024.clinicalnlp-1.28/'
+  - type: doi
+    value: 10.5281/zenodo.12657477
 repository-code: 'https://github.com/501Good/dialogue-classifier'
 abstract: >-
   This is a hierarchical classifier that can be trained to
@@ -23,3 +25,4 @@ abstract: >-
 license: MIT
 commit: 5e72ee9fd97027c08980c038864bffe5ee17ce32
 version: '1.0'
+date-released: '2024-03-14'
